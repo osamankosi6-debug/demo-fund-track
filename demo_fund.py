@@ -1,7 +1,9 @@
-
 import yfinance as yf, pandas as pd
-assets = ["TLT","GLD","DBC","UUP","SPY","BIL","QQQ"]
-px = yf.download(assets, start="2007-01-01", auto_adjust=True, progress=False)['Close']
+px = yf.download(["TLT","GLD","DBC","UUP","SPY","QQQ","BIL"], start="2007-01-01", auto_adjust=True, progress=False)
+if hasattr(px.columns, 'get_level_values'):
+    try: px = px['Close']
+    except: pass
+px = px.dropna()
 ret = px.pct_change().fillna(0)
 m_end = px.resample('ME').last().index
 defense = pd.Series(0.0, index=px.index)
@@ -21,4 +23,4 @@ net_comb = 0.85*net_5_proxy + 0.15*defense_net
 net_fees = net_comb - 0.0010*2.3/252 - 0.02/252
 eq = 100000*(1+net_fees).cumprod()
 eq.to_csv("track_record.csv")
-print(f"NAV ${eq.iloc[-1]:,.0f} done")
+print(f"NAV ${eq.iloc[-1]:,.0f}")
